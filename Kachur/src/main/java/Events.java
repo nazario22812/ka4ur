@@ -1,11 +1,16 @@
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import sql.Sqlite;
+
+import java.util.List;
 
 public class Events extends ListenerAdapter {
     @Override
@@ -29,7 +34,7 @@ public class Events extends ListenerAdapter {
 
             String username = user.getName();
 
-            event.getChannel().sendMessage("Ти качка").queue();
+            event.getChannel().sendMessage("Ти " + username).queue();
 
 
 
@@ -37,7 +42,14 @@ public class Events extends ListenerAdapter {
     }
     @Override
     public void onMessageDelete(MessageDeleteEvent ev){
-        ev.getChannel().sendMessage("Ти видалив повідомлення").queue();
+        TextChannel channel = ev.getGuild().getTextChannels().stream()
+                .filter(textChannel -> textChannel.getName().equals("del_msg_log"))
+                .findFirst()
+                .orElse(null);
+
+
+        channel.sendMessage("Хтось видалив повідомлення").queue();
+
     }
 
     @Override
@@ -47,7 +59,31 @@ public class Events extends ListenerAdapter {
 
         Guild gld = event.getGuild();
         String gld_name = gld.getName();
+        String gld_id = gld.getId();
 
+        sql.insert_guild(gld_name, gld_id);
+
+
+        gld.createTextChannel("del_msg_log").queue();
+        sql.gld_users(gld_name);
+
+
+
+
+
+    }
+
+    @Override
+    public void onGuildLeave(GuildLeaveEvent event){
+        Sqlite sql = new Sqlite();
+        Guild gld = event.getGuild();
+        String gld_name = gld.getName();
+        String gld_id = gld.getId();
+
+
+
+        sql.delete_guild(gld_name, gld_id);
+        sql.delgld_users(gld_name);
     }
 
 }
