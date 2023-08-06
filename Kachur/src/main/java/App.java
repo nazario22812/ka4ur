@@ -10,7 +10,7 @@ import java.util.EventListener;
 
 public class App implements EventListener {
     public static void main(String[] args) {
-        JDA jda = JDABuilder.createDefault("MTEzNjYyNDExMTkyNjM4MjY3Mg.GirX6R.uHLTLN46YvKqHx0mcJHFlh4wteh-E1gjAoQlR8")
+        JDA jda = JDABuilder.createDefault("MTEzNjYyNDExMTkyNjM4MjY3Mg.GXzgnz.98D7F7c-DgNPbrpi18G_GAzZ4WTRb8qbewXYU4")
             .addEventListeners(new Events())
             .addEventListeners(new Information())
             .addEventListeners(new Moderation())

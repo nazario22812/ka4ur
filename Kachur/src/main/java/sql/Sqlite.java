@@ -14,13 +14,56 @@ public class Sqlite {
             Statement statement = connection.createStatement();
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS guilds( id INTEGER PRIMARY KEY AUTOINCREMENT, guild_name TEXT NOT NULL, guild_id TEXT NOT NULL ) ");
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS guild_users( id INTEGER PRIMARY KEY AUTOINCREMENT, user_name TEXT NOT NULL, user_id TEXT NOT NULL, guild_name TEXT NOT NULL, guild_id TEXT NOT NULL  ) ");
-
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS commands_count( id INTEGER PRIMARY KEY, commandscount INTEGER DEFAULT 0 ) ");
 
 
             connection.setAutoCommit(false);
             connection.commit();
         }
         catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int countcom(){
+        int count = 0;
+
+
+        try {
+            // Підключення до бази даних SQLite
+            Connection connection = DriverManager.getConnection("jdbc:sqlite:test.db");
+
+            // Створення таблиці (приклад)
+            Statement statement = connection.createStatement();
+
+            ResultSet resultSet = statement.executeQuery("SELECT commandscount FROM commands_count");
+            if(resultSet.next()){
+                count = resultSet.getInt("commandscount");
+            }
+
+            connection.setAutoCommit(false);
+            connection.commit();
+
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return count;
+    }
+
+    public void commands_count(){
+        try {
+            Connection connection = DriverManager.getConnection("jdbc:sqlite:test.db");
+
+            Statement statement = connection.createStatement();
+
+            statement.executeUpdate("UPDATE commands_count SET commandscount = commandscount + 1");
+            connection.setAutoCommit(false);
+            connection.commit();
+
+        }
+        catch (SQLException e){
             e.printStackTrace();
         }
     }

@@ -61,12 +61,6 @@ public class Events extends ListenerAdapter {
         String gld_name = gld.getName();
         String gld_id = gld.getId();
 
-        sql.insert_guild(gld_name, gld_id);
-
-
-        gld.createTextChannel("del_msg_log").queue();
-        sql.gld_users(gld_name);
-
 
 
 
@@ -81,9 +75,6 @@ public class Events extends ListenerAdapter {
         String gld_id = gld.getId();
 
 
-
-        sql.delete_guild(gld_name, gld_id);
-        sql.delgld_users(gld_name);
     }
 
 }

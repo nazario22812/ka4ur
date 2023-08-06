@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+import sql.Sqlite;
 import utilts.Addons;
 
 import java.awt.*;
@@ -34,6 +35,10 @@ public class Information extends ListenerAdapter{
 
             event.replyEmbeds(embed.build()).queue();
 
+            Sqlite sql = new Sqlite();
+
+            sql.commands_count();
+
         }
 
         else if (event.getName().equals("info")){
@@ -49,33 +54,66 @@ public class Information extends ListenerAdapter{
             embed.setThumbnail("https://i.imgur.com/s4130Er.png");
             event.replyEmbeds(embed.build()).queue();
 
+            Sqlite sql = new Sqlite();
+
+            sql.commands_count();
+
         }
         else if (event.getName().equals("stats")) {
 
             Guild gld = event.getGuild();
+            Addons addons = new Addons(event.getJDA());
+            Sqlite sql = new Sqlite();
+
+            int x = addons.getGuildscount();
+            int y = addons.getChannelscount();
+            int b = addons.getMemberscount();
+            //event.getChannel().sendMessage("" + x).queue();
+            long ping = addons.ping();
+            int co = sql.countcom();
+
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.setTitle("Статистика Качура");
+
+            embed.addField("Звичайна", "Гільдії: `" + x + "`\nКористувачі: `" + b + "`\nКанали: `" + y + "`", true);
+            embed.addField("Системна", "З'єднання: `" + ping + "ms`\nВикористання команд: `" + co + "`" , true);
+
+
+
+            embed.setColor(new Color(255, 255 ,255));
+            embed.setFooter("Ka4ur entertainment © 2023", "https://i.imgur.com/s4130Er.png");
+            embed.setThumbnail("https://i.imgur.com/s4130Er.png");
+            event.replyEmbeds(embed.build()).queue();
+
+
 
 
         }
 
         else if (event.getName().equals("serverinfo")) {
 
-            Addons addons = new Addons(event.getJDA());
-
-            addons.processGuildMembers();
-
+        
+            Sqlite sql = new Sqlite();
+            sql.commands_count();
         }
 
         else if (event.getName().equals("user")) {
 
+            Sqlite sql = new Sqlite();
 
+            sql.commands_count();
         }
         else if (event.getName().equals("bio")) {
+            Sqlite sql = new Sqlite();
 
+            sql.commands_count();
 
         }
 
         else if (event.getName().equals("inviteinfo")) {
+            Sqlite sql = new Sqlite();
 
+            sql.commands_count();
 
         }
 
