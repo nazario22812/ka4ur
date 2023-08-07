@@ -2,9 +2,11 @@ package commands;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -12,6 +14,8 @@ import sql.Sqlite;
 import utilts.Addons;
 
 import java.awt.*;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 
 public class Information extends ListenerAdapter{
@@ -92,12 +96,81 @@ public class Information extends ListenerAdapter{
 
         else if (event.getName().equals("serverinfo")) {
 
-        
+            JDA jda = event.getJDA();
+            Guild gld = event.getGuild();
+            EmbedBuilder embed = new EmbedBuilder();
+            Addons addons = new Addons(event.getJDA());
+
+            int Counttxt = 0;
+            int Countvoice = 0;
+            int Countmens = 0;
+            int Countbots = 0;
+
+
+            String name = gld.getName();
+            String gld_id = gld.getId();
+            String owner_id = gld.getOwnerId();
+            String member = jda.getUserById(owner_id).getName();
+            String data = gld.getTimeCreated().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
+
+
+
+            for(TextChannel str: gld.getTextChannels()){
+                Counttxt ++;
+            }
+            for (VoiceChannel str: gld.getVoiceChannels()){
+                Countvoice++;
+            }
+
+            int sum = Counttxt + Countvoice;
+
+
+            for (Member mmbr: gld.getMembers()){
+                if (mmbr.getUser().isBot()) {
+                    Countbots++;
+                }
+                else{
+                    Countmens++;
+                }
+            }
+
+
+            embed.setTitle("Інформація про " + name);
+            embed.addField("Учасники:","Загалом: `" + gld.getMemberCount() + "`\nЛюди: `" + Countmens + "`\nБоти: `" + Countbots + "`", true);
+            embed.addField("За статусом:","-", true);
+            embed.addField("Канали:","Загалом: `" + sum + "`\nТекстові: `" + Counttxt + "`\nГолосові: `" + Countvoice + "`", true);
+
+            embed.addField("Власник:","" + member, true);
+            embed.addField("Створенний:","" + data, true);
+
+            embed.setColor(new Color(255,255,255));
+            embed.setFooter("ID: " + gld_id);
+
+            try {
+                String str =  gld.getIconUrl().toString();
+
+                embed.setThumbnail(str);
+                event.replyEmbeds(embed.build()).queue();
+
+            }catch (NullPointerException e){
+
+                embed.setFooter("ID: " + gld_id);
+                event.replyEmbeds(embed.build()).queue();
+            }
+
+
             Sqlite sql = new Sqlite();
             sql.commands_count();
         }
 
         else if (event.getName().equals("user")) {
+
+            Guild gld = event.getGuild();
+            String str =  gld.getIconUrl().toString();
+
+
+            System.out.println(str);
+
 
             Sqlite sql = new Sqlite();
 
@@ -112,6 +185,8 @@ public class Information extends ListenerAdapter{
 
         else if (event.getName().equals("inviteinfo")) {
             Sqlite sql = new Sqlite();
+
+
 
             sql.commands_count();
 

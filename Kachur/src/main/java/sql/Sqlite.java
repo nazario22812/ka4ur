@@ -43,7 +43,8 @@ public class Sqlite {
 
             connection.setAutoCommit(false);
             connection.commit();
-
+            connection.close();
+            statement.close();
         }
         catch (SQLException e) {
             e.printStackTrace();
@@ -61,6 +62,9 @@ public class Sqlite {
             statement.executeUpdate("UPDATE commands_count SET commandscount = commandscount + 1");
             connection.setAutoCommit(false);
             connection.commit();
+
+            connection.close();
+            statement.close();
 
         }
         catch (SQLException e){
