@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import sql.Sqlite;
+import utilts.Addons;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class Events extends ListenerAdapter {
     public void onReady(ReadyEvent event){
         Sqlite sql = new Sqlite();
         sql.conn();
+
     }
 
 
@@ -54,6 +56,7 @@ public class Events extends ListenerAdapter {
 
     @Override
     public void onGuildJoin(GuildJoinEvent event){
+        Addons addons = new Addons(event.getJDA());
         Sqlite sql = new Sqlite();
         sql.conn();
 

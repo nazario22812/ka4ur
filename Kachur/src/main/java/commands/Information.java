@@ -1,14 +1,22 @@
 package commands;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.internal.requests.MemberChunkManager;
 import org.jetbrains.annotations.NotNull;
 import sql.Sqlite;
 import utilts.Addons;
@@ -16,9 +24,13 @@ import utilts.Addons;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 
 public class Information extends ListenerAdapter{
+
+
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event){
 
@@ -101,62 +113,68 @@ public class Information extends ListenerAdapter{
             EmbedBuilder embed = new EmbedBuilder();
             Addons addons = new Addons(event.getJDA());
 
-            int Counttxt = 0;
-            int Countvoice = 0;
-            int Countmens = 0;
-            int Countbots = 0;
+            event.getGuild().loadMembers().onSuccess(members -> {
+                int Counttxt = 0;
+                int Countvoice = 0;
 
 
-            String name = gld.getName();
-            String gld_id = gld.getId();
-            String owner_id = gld.getOwnerId();
-            String member = jda.getUserById(owner_id).getName();
-            String data = gld.getTimeCreated().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
+                String name = gld.getName();
+                String gld_id = gld.getId();
+                String owner_id = gld.getOwnerId();
+                String member = jda.getUserById(owner_id).getName();
+                String data = gld.getTimeCreated().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
 
 
-
-            for(TextChannel str: gld.getTextChannels()){
-                Counttxt ++;
-            }
-            for (VoiceChannel str: gld.getVoiceChannels()){
-                Countvoice++;
-            }
-
-            int sum = Counttxt + Countvoice;
-
-
-            for (Member mmbr: gld.getMembers()){
-                if (mmbr.getUser().isBot()) {
-                    Countbots++;
+                for(TextChannel str: gld.getTextChannels()){
+                    Counttxt ++;
                 }
-                else{
-                    Countmens++;
+                for (VoiceChannel str: gld.getVoiceChannels()){
+                    Countvoice++;
                 }
-            }
+                int sum = Counttxt + Countvoice;
 
 
-            embed.setTitle("Інформація про " + name);
-            embed.addField("Учасники:","Загалом: `" + gld.getMemberCount() + "`\nЛюди: `" + Countmens + "`\nБоти: `" + Countbots + "`", true);
-            embed.addField("За статусом:","-", true);
-            embed.addField("Канали:","Загалом: `" + sum + "`\nТекстові: `" + Counttxt + "`\nГолосові: `" + Countvoice + "`", true);
+                int[] users = {0};
+                int[] bots = {0};
 
-            embed.addField("Власник:","" + member, true);
-            embed.addField("Створенний:","" + data, true);
 
-            embed.setColor(new Color(255,255,255));
-            embed.setFooter("ID: " + gld_id);
+                for(Member mmber: members){
+                    if (mmber.getUser().isBot())
+                        bots[0]++;
+                    else
+                        users[0]++;
+                }
 
-            try {
-                String str =  gld.getIconUrl().toString();
 
-                embed.setThumbnail(str);
-                event.replyEmbeds(embed.build()).queue();
 
-            }catch (NullPointerException e){
+                embed.setTitle("Інформація про " + name);
+                embed.addField("Учасники:","Загалом: `" + gld.getMemberCount() + "`\nЛюди: `" + users[0] + "`\nБоти: `" + bots[0] + "`", true);
+                //embed.addField("За статусом:","Онлайн: `" + online + "`\nВідійшов: `" + idle + "`\nНе турбувати: `" + blocked + "`\nОффлайн: `" + offline + "`", true);
+                embed.addField("Канали:","Загалом: `" + sum + "`\nТекстові: `" + Counttxt + "`\nГолосові: `" + Countvoice + "`", true);
 
+                embed.addField("Власник:","" + member, true);
+                embed.addField("Створенний:","" + data, true);
+
+                embed.setColor(new Color(255,255,255));
                 embed.setFooter("ID: " + gld_id);
-                event.replyEmbeds(embed.build()).queue();
-            }
+
+
+                try {
+                    String str =  gld.getIconUrl().toString();
+
+                    embed.setThumbnail(str);
+                    event.replyEmbeds(embed.build()).queue();
+
+                }catch (NullPointerException e){
+
+                    embed.setFooter("ID: " + gld_id);
+                    event.replyEmbeds(embed.build()).queue();
+                }
+
+
+            });
+
+
 
 
             Sqlite sql = new Sqlite();
@@ -164,15 +182,58 @@ public class Information extends ListenerAdapter{
         }
 
         else if (event.getName().equals("user")) {
-
-            Guild gld = event.getGuild();
-            String str =  gld.getIconUrl().toString();
-
-
-            System.out.println(str);
-
+            //event.deferReply().queue(); // Запобігає автоматичній відповіді перед обробкою
 
             Sqlite sql = new Sqlite();
+            OptionMapping optionMapping = event.getOption("member");
+            EmbedBuilder embed = new EmbedBuilder();
+
+
+
+            if(optionMapping != null){
+                User user = optionMapping.getAsUser();
+                Member member = optionMapping.getAsMember();
+                OnlineStatus status = member.getOnlineStatus();
+
+
+                String join = member.getTimeJoined().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
+                LocalDateTime currentTime = LocalDateTime.now();
+                LocalDateTime createTime = member.getTimeJoined().toLocalDateTime();// Получение времени создания из объекта gld
+                Duration duration = Duration.between(createTime, currentTime); // Вычисление разницы между текущим временем и временем создания
+                long daysPassed = duration.toDays(); // Получение количества прошедших дней
+
+
+                String registed = member.getTimeCreated().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
+                LocalDateTime currentTime1 = LocalDateTime.now();
+                LocalDateTime createTime1 = member.getTimeCreated().toLocalDateTime();// Получение времени создания из объекта gld
+                Duration duration1 = Duration.between(createTime1, currentTime1); // Вычисление разницы между текущим временем и временем создания
+                long daysPassed1 = duration1.toDays(); // Получение количества прошедших дней
+
+                String name = user.getName();
+                String fullname = member.getAsMention();
+
+                embed.setTitle("Інформація про" + name);
+                embed.setDescription("Також ти додати додаткову інформацію про себе використовуючи `/bio`");
+
+                //embed.addField("","",false);
+                embed.addField("Звичайна інформація\nНікнейм:","" + name + "(" + fullname + ")",false);
+                embed.addField("Cтатус:","" + status,false);
+                embed.addField("Приєднався:","" + join + " (`" + daysPassed + "дні тому`)",false);
+                embed.addField("Зареєструвався:","" + registed + " (`" + daysPassed1 + "дні тому`)",false);
+
+
+                embed.setFooter("ID: " + user.getId());
+                embed.setThumbnail(user.getAvatarUrl().toString());
+                embed.setColor(new Color(member.getColorRaw()));
+
+                event.replyEmbeds(embed.build()).queue();
+            }
+            else{
+                event.reply("да да").queue();
+            }
+
+
+
 
             sql.commands_count();
         }

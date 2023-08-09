@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 public class Music extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event){
+        if(event.getName().equals("play")){
 
+        }
     }
 }
